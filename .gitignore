@@ -1,0 +1,5 @@
+*.jsonl
+*.json
+node_modules
+!package.json
+data_files/
