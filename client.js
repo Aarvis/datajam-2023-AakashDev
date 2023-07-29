@@ -1,5 +1,5 @@
 import { WebSocket } from "ws";
-import { execSync } from "child_process";
+import * as winston from "winston";
 
 const BASE_URL = "ws://localhost:8080";
 
@@ -8,6 +8,8 @@ const SERIES_ID = 2579089;
 const WS_URL = `${BASE_URL}/${SERIES_ID}`;
 
 const socket = new WebSocket(WS_URL);
+
+var counter = 0;
 
 socket.onopen = () => {
   console.log("Connected to WebSocket server.");
@@ -18,11 +20,21 @@ socket.onclose = (event) => {
 };
 
 socket.onmessage = (event) => {
+  counter += 1;
+
   const object = JSON.parse(event.data);
 
-  console.dir(object, { depth: null, colors: true });
+  const logger = winston.createLogger({
+    level: "info",
+    transports: [
+      new winston.transports.File({
+        filename: `events/event_${counter}.log`,
+        format: winston.format.prettyPrint(),
+      }),
+    ],
+  });
 
-  execSync("sleep 60");
+  logger.info("Event", object);
 };
 
 socket.onerror = (error) => {
